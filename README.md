@@ -1,32 +1,34 @@
-# tafada
-this is readme to describe what I have done as a freelancer in tafada project
+# Tafada
 
-in this readme, I will sammury most of what I have done
+## Overview
+This README describes the work I've completed as a freelancer on the Tafada project.
 
-## Backend
+In this README, I will summarize most of what I have done.
 
-tree structure 
+## Backend Structure
+
+### Tree Structure
 ├── controllers
-│   ├── authController.js
-│   ├── dashboardController.js
-│   └── plaidController.js
+│ ├── authController.js
+│ ├── dashboardController.js
+│ └── plaidController.js
 ├── middlewares
-│   └── auth.middleware.js
+│ └── auth.middleware.js
 ├── models
-│   ├── cardModel.js
-│   ├── otpModel.js
-│   └── userModel.js
+│ ├── cardModel.js
+│ ├── otpModel.js
+│ └── userModel.js
 ├── routes
-│   ├── auth.js
-│   ├── dashboard.js
-│   └── plaid.js
+│ ├── auth.js
+│ ├── dashboard.js
+│ └── plaid.js
 ├── uploads
-│   └── note.txt
+│ └── note.txt
 ├── utils
-│   ├── constants
-│   │   └── api-constants.js
-│   └── helpers
-│       └── helpers.js
+│ ├── constants
+│ │ └── api-constants.js
+│ └── helpers
+│ └── helpers.js
 ├── package.json
 ├── package-lock.json
 ├── pin.txt
@@ -34,100 +36,47 @@ tree structure
 ├── README.md
 └── server.js
 
+### Models
+- **user**
+- **card**
+- **otp**: This model is used to save temporary OTPs for users until they check them. After verification, the temporary OTP is removed, and it is saved in the user model.
 
-Models 
+### MVC Structure
+- **Models**: Contain the database tables.
+- **Routes**: Contain endpoints.
+- **Controllers**: Contain functions for the endpoints.
+- **Middlewares**: Act as a security layer, checking the user's token before executing the controller function.
+- **Uploads**: Contain images and PDFs uploaded by users.
+- **Utils**: Contain shared functions or constants.
 
-- user
+### Important Functions and Comments
+- The README provides detailed explanations of functions and comments, such as testing proposals and explanations about the use of certain code blocks.
+- It mentions the use of a mock webhook function to simulate Plaid webhook requests, which is essential for testing but requires a live server.
 
-- card
+## Main New Files
 
-- otp which is needed to save the temporary otps for the user till they check them and then we can remove the temporary otp and   save it in the user model
+### Backend
 
+#### Controllers
+1. **authController.js**: Contains functions `sendOTP` and `checkOTP` for OTP handling.
+    - `sendOTP`: Sends an OTP to the user's phone using textbelt API.
+    - `checkOTP`: Verifies the OTP entered by the user.
 
-** Note that I used MVC structure where 
-    - models contain the db tables
-    - routes contain endpoints
-    - controllers contain functions of the endpoints
-    - middlewares act as a layer of the secuirty as it cames before the function of the contoller to 
-      check the token of the user and get the user from this token
-    - uploads contain the images and pdf that the user will upload
-    - utils contain the functions or constants that is shared between files
+2. **dashboardController.js**: Contains functions for managing user account information, image uploads, and Stripe transactions.
+    - `addInfo`: Adds/edit user account information.
+    - `uploadImage`: Manages user profile image uploads.
+    - `myAccount`: Retrieves user information.
+    - `createStripeCharge`: Creates a Stripe charge and returns a redirect link.
+    - `checkStripeCharge`: Checks if the user has completed the payment.
+    - `getTransactions`: Retrieves user transactions.
 
+3. **plaidController.js**: Contains Plaid configuration and functions for managing Plaid integration.
+    - `linkToken`: Gets a token for the user to log into their bank account.
+    - `exchange_public_token`: Exchanges the user's public token for an access token.
+    - `transferAmount`: Initiates and creates a transfer for the user.
+    - `requestLimit`: Handles user requests for a limit, creates transfers, and initiates recurring transfers.
+    - `dashboard`: Retrieves user analytics for the dashboard.
+    - `webhookTransfer`: Manages user score changes when payments are made.
 
-there are some functions or lines that are commented and written on them that they can be user for the testing, you can uncomment them but takecare as maybe you have to change the code in somewhere else as 
-
-// // Testing proposal only
-// const request = {
-//   access_token: user.info.connected.credential.access_token,
-//   webhook_code: 'RECURRING_TRANSACTIONS_UPDATE'
-// };
-// try {
-//   const response = await client.sandboxItemFireWebhook(request);
-// } catch (error) {
-//   // handle error
-//   console.log(error);
-// }
-
-starting from line 308 in plaidcontroller.
-
-it is used to mock the webhook that the plaid used to send the change of status as plaid doesn't provide this feature (sending webhook requests to see the change in status) in sandbox so this function mock it, but to use it, you have to use live server and provide its url in line 30 (webhook value) ( change the first part only) 
-
-
-
-Main New files :
-
-## Backend : 
-
-### controllers
-
-#### - authController.js contain 2 main functions which are sendOTP and checkOTP
-
-######  --- sendOTP -> is the function which get the phone and new_code boolean(which we use to check if the user wants to login using his code or wants new code) and in this function 
-######   ---- generateOTP which generate random code contain number+small letter+ capital letters + special char 
-
-######   check the phone to see if the user is existing on the db or not to send his name the message and then send the message using textbelt api and check if the response is OK then create new object in the OTP model and return status true to the front end else it will return failed to semd SMS error
-
-
-######  --- checkOTP -> is the function which get the phone and new_code boolean and otp that the user written and then check new code bool
-
-###### ---- if it was true then the user wants to change his OTP so it will find the new otp and compare them to see if they are the same and if not it will return error, else it will continue
-
-###### ---- if it was false then the user wants to login using the existing code, so it checks the existing otp code in the model and if there is no user with this otp then it will return error saved otp is not correct, else it will continue
-
-###### after that if the user found then it will set new token to the user using jwt and update the otp if the new code is true else it will just send OK status with the new token to the user
-
-###### if the user is not found then it will create new user and made new token to him and delete the otp from the OTP model and send created status to the user 
-
-#### dashboardController.js contains 6 main functions which are addInfo, myAccount, uploadImage, createStripeCharge, checkStripeCharge and getTransactions
-
-##### - addInfo -> add info about the user when he edits  his account
-
-##### - uploadImage -> add/edit image of the user that he uploads from his account
-
-##### - myAccount -> get the info of the user and return it back to the front ( to save his session until he logs out)
-
-##### - createStripeCharge -> get the id of the card that the user presses it and return the link which the user will redirect to it
-
-##### - checkStripeCharge -> check if the user complete his payment 
-
-##### - getTransactions -> return the transactions of the user which will appear in the transaction page
-
-
-#### plaidController.js contains the configuration of the plaid client and secret (don't forget to change it to be the real secret not the sandbox) and it also contains 6 main functions which are linkToken,exchange_public_token, transferAmount, requestLimit, dashboard, webhookTransfer
-
-##### - linkToken -> get the token for the user so he can log into his back account (don't forget to change the webhook to the real endpoint)
-
-##### - exchange_public_token -> after the user logs into his account, this will exchange his public token to access token which will can used  
-
-##### - transferAmount -> this is comman function that is used in more than one situation which will init transfer authority and then create transfer for the user
-
-##### - requestLimit -> this is the function where the user asks for a limit so it made every check it wants and create the transfer and made recurring transfer 
-
-##### - dashboard -> return the analytics of the user so it can appear in the dashboard
-
-##### - webhookTransfer ->  when the user pays his recurring transfer, it will add the amount of the payment to the db and change his score
-
-
-### utils/helpers 
-
-#### - change score -> this function changes the score according to the process of the user and calculate the new score and save it
+#### Utils/Helpers
+- `changeScore`: A function that changes the user's score based on their activity and updates it in the database.
