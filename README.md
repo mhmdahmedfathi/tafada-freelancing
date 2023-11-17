@@ -8,6 +8,8 @@ In this README, I will summarize most of what I have done.
 ## Backend Structure
 
 ### Tree Structure
+```
+backend
 ├── controllers
 │ ├── authController.js
 │ ├── dashboardController.js
@@ -35,7 +37,7 @@ In this README, I will summarize most of what I have done.
 ├── pnpm-lock.yaml
 ├── README.md
 └── server.js
-
+```
 ### Models
 - **user**
 - **card**
